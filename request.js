@@ -1,0 +1,121 @@
+import headers from "./headers.js";
+
+import { parse } from "csv-parse/sync";
+
+const urlProfessionalsData =
+  "https://www.trinks.com/BackOffice/Download/ExportarProfissionais";
+
+const lojaIds = {
+  14: {
+    idRelacaoProfissional: "46810",
+    idEstabelecimento: "18769",
+    idRelacaoProfissionalRecepcionista: "46809",
+  },
+  batista: {
+    idRelacaoProfissional: "103890",
+    idEstabelecimento: "35295",
+    idRelacaoProfissionalRecepcionista: "103889",
+  },
+  duque: {
+    idRelacaoProfissional: "440885",
+    idEstabelecimento: "120037",
+    idRelacaoProfissionalRecepcionista: "440884",
+  },
+  umarizal: {
+    idRelacaoProfissional: "49102",
+    idEstabelecimento: "19357",
+    idRelacaoProfissionalRecepcionista: "49101",
+  },
+};
+
+const currentDate = new Date();
+const month = String(currentDate.getMonth() + 2).padStart(2, "0");
+
+let cookie = headers.Cookie;
+
+function getHeadersForStore(store) {
+  const idEstabelecimentoPattern = new RegExp(
+    "(?<=idEstabelecimentoPadrao)(.+?)=(.+?)(?=;)",
+  );
+  cookie = cookie.replace(
+    idEstabelecimentoPattern,
+    `$1=${lojaIds[store].idEstabelecimento}`,
+  );
+
+  return {
+    ...headers,
+    "id-estabelecimento-autenticado": lojaIds[store].idEstabelecimento,
+    Cookie: cookie,
+  };
+}
+
+function cookieShouldBeSet(response) {
+  const setCookie = response.headers.getSetCookie();
+  if (setCookie) {
+    setCookie.map((ck) => {
+      const keyValue = ck.split(";")[0];
+      const [key, value] = keyValue.split("=");
+      const pattern = new RegExp(`(?<=${key})=(.+?)(?=;)`);
+      cookie = cookie.replace(pattern, `=${value}`);
+    });
+  }
+}
+
+async function getBirthdayList(store) {
+  const birthdayList = {};
+
+  const body = {
+    apenasAtivos: true,
+  };
+
+  const encodedBody = new URLSearchParams(body);
+
+  for (const store of Object.keys(lojaIds)) {
+    const headers = getHeadersForStore(store);
+
+    const response = await fetch(urlProfessionalsData, {
+      method: "POST",
+      headers: {
+        ...headers,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: encodedBody,
+    });
+
+    cookieShouldBeSet(response);
+
+    const responseBody = await response.json();
+
+    const fileUrl = responseBody.UrlDownload;
+
+    const employeeInfoResponse = await fetch(fileUrl);
+    const rawData = await employeeInfoResponse.arrayBuffer();
+
+    const decoder = new TextDecoder("windows-1252");
+    const csvFile = decoder.decode(rawData);
+
+    const csvParsed = parse(csvFile, {
+      delimiter: ";",
+      columns: true,
+      relax_column_count: true,
+    });
+
+    for (const row of csvParsed) {
+      const birthdayDate = row["Data de nascimento"];
+      const birthdayMonth = birthdayDate.split("/")[1];
+
+      if (
+        birthdayMonth === month &&
+        !Object.keys(birthdayList).includes(row["Apelido"])
+      ) {
+        birthdayList[row["Apelido"]] = birthdayDate;
+      }
+    }
+  }
+
+  return birthdayList;
+}
+
+const request = { getBirthdayList };
+
+export default request;
