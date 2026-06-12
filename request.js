@@ -29,7 +29,7 @@ const lojaIds = {
 };
 
 const currentDate = new Date();
-const month = String(currentDate.getMonth() + 2).padStart(2, "0");
+const month = String(((currentDate.getMonth() + 1) % 12) + 1).padStart(2, "0");
 
 let cookie = headers.Cookie;
 
