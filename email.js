@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 async function send(birthdayList) {
   let mailBody = "Os aniversariantes do próximos mês do clube depil são:";
   for (const [name, date] of Object.entries(birthdayList)) {
-    mailBody += `\n\t${name}: ${date}`;
+    mailBody += `\n\t${name}:\t${date}`;
   }
   mailBody += "\n\nAtt GermaBot";
 
@@ -17,7 +17,7 @@ async function send(birthdayList) {
 
   const mailOptions = {
     from: `"Germano Aquino" <${process.env.MAIL_USER}>`,
-    to: [`<${process.env.MAIL_RECIPIENT}>`],
+    to: [`${process.env.MAIL_RECIPIENT}`],
     subject: "Aniversariantes do Próximo Mês",
     text: mailBody,
   };
