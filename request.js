@@ -106,9 +106,9 @@ async function getBirthdayList(store) {
 
       if (
         birthdayMonth === month &&
-        !Object.keys(birthdayList).includes(row["Apelido"])
+        !Object.keys(birthdayList).includes(row["Nome completo"])
       ) {
-        birthdayList[row["Apelido"]] = birthdayDate;
+        birthdayList[row["Nome completo"]] = birthdayDate;
       }
     }
   }
