@@ -61,8 +61,9 @@ function cookieShouldBeSet(response) {
   }
 }
 
-async function getBirthdayList(store) {
+async function getBirthdayList() {
   const birthdayList = {};
+  const missingBirthdayList = [];
 
   const body = {
     apenasAtivos: true,
@@ -70,7 +71,8 @@ async function getBirthdayList(store) {
 
   const encodedBody = new URLSearchParams(body);
 
-  for (const store of Object.keys(lojaIds)) {
+  for (const store of ["14"]) {
+    //Object.keys(lojaIds)
     const headers = getHeadersForStore(store);
 
     const response = await fetch(urlProfessionalsData, {
@@ -102,8 +104,15 @@ async function getBirthdayList(store) {
 
     for (const row of csvParsed) {
       const birthdayDate = row["Data de nascimento"];
-      const birthdayMonth = birthdayDate.split("/")[1];
+      if (
+        !birthdayDate &&
+        !missingBirthdayList.includes(row["Nome completo"])
+      ) {
+        missingBirthdayList.push(row["Nome completo"]);
+        continue;
+      }
 
+      const birthdayMonth = birthdayDate.split("/")[1];
       if (
         birthdayMonth === month &&
         !Object.keys(birthdayList).includes(row["Nome completo"])
@@ -113,7 +122,7 @@ async function getBirthdayList(store) {
     }
   }
 
-  return birthdayList;
+  return [birthdayList, missingBirthdayList];
 }
 
 const request = { getBirthdayList };

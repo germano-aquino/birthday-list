@@ -1,10 +1,17 @@
 import nodemailer from "nodemailer";
 
-async function send(birthdayList) {
+async function send(birthdayList, missingBirthdayList) {
   let mailBody = "Os aniversariantes do próximos mês do clube depil são:";
   for (const [name, date] of Object.entries(birthdayList)) {
     mailBody += `\n\t${name}:\t${date}`;
   }
+
+  if (missingBirthdayList.length) {
+    mailBody +=
+      "\n\nAs seguintes colaboradoras estão sem data de nascimento cadastrada no sistema:";
+    for (const name of missingBirthdayList) mailBody += `\n\t${name}`;
+  }
+
   mailBody += "\n\nAtt GermaBot";
 
   const transporter = nodemailer.createTransport({
