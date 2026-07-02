@@ -71,8 +71,7 @@ async function getBirthdayList() {
 
   const encodedBody = new URLSearchParams(body);
 
-  for (const store of ["14"]) {
-    //Object.keys(lojaIds)
+  for (const store of Object.keys(lojaIds)) {
     const headers = getHeadersForStore(store);
 
     const response = await fetch(urlProfessionalsData, {
