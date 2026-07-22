@@ -111,12 +111,16 @@ async function getBirthdayList() {
         continue;
       }
 
-      const birthdayMonth = birthdayDate.split("/")[1];
+      const [birthdayDay, birthdayMonth, _] = birthdayDate.split("/");
       if (
         birthdayMonth === month &&
         !Object.keys(birthdayList).includes(row["Nome completo"])
       ) {
-        birthdayList[row["Nome completo"]] = birthdayDate;
+        birthdayList[row["Nome completo"]] = {
+          aniversario: `${birthdayDay}/${birthdayMonth}`,
+          loja: store,
+          funcao: row["Função"],
+        };
       }
     }
   }
@@ -124,6 +128,20 @@ async function getBirthdayList() {
   return [birthdayList, missingBirthdayList];
 }
 
-const request = { getBirthdayList };
+async function sendBirthdayListToN8n(birthdayList) {
+  if (!process.env.N8N_WEBHOOK || process.env.N8N_TOKEN) {
+    throw Error("As variáveis de ambiente do N8N não estão configuradas.");
+  }
+  const n8nUrl = process.env.N8N_WEBHOOK;
+  const token = process.env.N8N_TOKEN;
+
+  await fetch(n8nUrl, {
+    method: "POST",
+    headers: { auth: token },
+    body: JSON.stringify(birthdayList),
+  });
+}
+
+const request = { getBirthdayList, sendBirthdayListToN8n };
 
 export default request;

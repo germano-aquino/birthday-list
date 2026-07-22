@@ -2,8 +2,8 @@ import nodemailer from "nodemailer";
 
 async function send(birthdayList, missingBirthdayList) {
   let mailBody = "Os aniversariantes do próximos mês do clube depil são:";
-  for (const [name, date] of Object.entries(birthdayList)) {
-    mailBody += `\n\t${name}:\t${date}`;
+  for (const [name, data] of Object.entries(birthdayList)) {
+    mailBody += `\n\t${name}:\t${data["aniversario"]}`;
   }
 
   if (missingBirthdayList.length) {
