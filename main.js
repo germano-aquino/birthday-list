@@ -6,7 +6,6 @@ await main();
 async function main() {
   try {
     const [birthdayList, missingBirthdayList] = await request.getBirthdayList();
-    console.log(birthdayList);
     await request.sendBirthdayListToN8n(birthdayList);
     await email.send(birthdayList, missingBirthdayList);
   } catch (error) {
