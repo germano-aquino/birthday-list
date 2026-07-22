@@ -29,7 +29,7 @@ const lojaIds = {
 };
 
 const currentDate = new Date();
-const month = String(((currentDate.getMonth() + 1) % 12) + 1).padStart(2, "0");
+const month = String((currentDate.getMonth() + 1) % 12).padStart(2, "0");
 
 let cookie = headers.Cookie;
 
@@ -129,16 +129,24 @@ async function getBirthdayList() {
 }
 
 async function sendBirthdayListToN8n(birthdayList) {
-  if (!process.env.N8N_WEBHOOK || process.env.N8N_TOKEN) {
+  if (!process.env.N8N_WEBHOOK || !process.env.N8N_TOKEN) {
     throw Error("As variáveis de ambiente do N8N não estão configuradas.");
   }
   const n8nUrl = process.env.N8N_WEBHOOK;
   const token = process.env.N8N_TOKEN;
 
+  const birthdayListArray = [];
+  for (const [name, data] of Object.entries(birthdayList)) {
+    birthdayListArray.push({
+      ...data,
+      nome: name,
+    });
+  }
+
   await fetch(n8nUrl, {
     method: "POST",
     headers: { auth: token },
-    body: JSON.stringify(birthdayList),
+    body: JSON.stringify(birthdayListArray),
   });
 }
 
