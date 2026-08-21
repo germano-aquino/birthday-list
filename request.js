@@ -1,6 +1,9 @@
 import headers from "./headers.js";
 
 import { parse } from "csv-parse/sync";
+import os from "os";
+import fs from "fs";
+import path from "path";
 
 const urlProfessionalsData =
   "https://www.trinks.com/BackOffice/Download/ExportarProfissionais";
@@ -58,7 +61,29 @@ function cookieShouldBeSet(response) {
       const pattern = new RegExp(`(?<=${key})=(.+?)(?=;)`);
       cookie = cookie.replace(pattern, `=${value}`);
     });
+
+    process.env.COOKIE = cookie;
   }
+}
+
+function updateEnvCookie(cookie) {
+  const envPath = path.resolve(process.cwd(), ".env");
+
+  let envContent = "";
+  if (fs.existsSync(envPath)) {
+    envContent = fs.readFileSync(envPath, "utf-8");
+  }
+
+  const regex = new RegExp(`(?<=COOKIE) = (.+?)(?=\n)`);
+
+  if (regex.test(envContent)) {
+    envContent = envContent.replace(regex, ` = '${cookie}'`);
+  } else {
+    const eol = envContent.endsWith(os.EOL) || envContent === "" ? "" : os.EOL;
+    envContent += `${eol}${newEntry}${os.EOL}`;
+  }
+
+  fs.writeFileSync(envPath, envContent, "utf-8");
 }
 
 async function getBirthdayList() {
@@ -150,6 +175,6 @@ async function sendBirthdayListToN8n(birthdayList) {
   });
 }
 
-const request = { getBirthdayList, sendBirthdayListToN8n };
+const request = { getBirthdayList, sendBirthdayListToN8n, updateEnvCookie };
 
 export default request;

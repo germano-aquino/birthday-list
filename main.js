@@ -12,5 +12,7 @@ async function main() {
     console.log("Falha ao gerar lista de aniversariantes do mês.");
     console.log(error.message);
     console.log(error);
+  } finally {
+    request.updateEnvCookie(process.env.COOKIE);
   }
 }

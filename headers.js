@@ -1,12 +1,17 @@
-import fs from "fs";
-
-const cookie = fs.readFileSync("./cookie.txt", "utf-8");
+const cookie = process.env.COOKIE;
 
 const idEstabelecimentoPattern = new RegExp(
   "(?<=idEstabelecimentoPadrao)(.+?)=(.+?)(?=;)",
 );
 
 const match = cookie.match(idEstabelecimentoPattern);
+
+if (!cookie || match.length < 3) {
+  throw new Error(
+    "Cookie inválido, revise as variáveis de ambiente e tente novamente.",
+  );
+}
+
 const idContaLogado = match[1];
 const idEstabelecimento = match[2];
 
